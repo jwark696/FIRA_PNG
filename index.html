@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>fira | Satellite fire record</title>
+<meta name="description" content="Active-fire detections from NASA MODIS and VIIRS, shown country by country.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=Noto+Kufi+Arabic:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <a class="mark" href="#home" id="mark" data-i18n-aria="nav.home">fira</a>
+  <div class="bar-tools">
+    <button type="button" class="tool" id="btn-theme" data-i18n-aria="nav.theme">
+      <svg class="th" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <g class="th-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g>
+        <path class="th-moon" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>
+      </svg>
+    </button>
+    <button type="button" class="tool tool-lang" id="btn-lang" lang="ar" data-i18n="nav.lang" data-i18n-aria="nav.langLabel">عربي</button>
+  </div>
+</header>
+
+<main id="app">
+
+  <div id="view-home">
+    <section class="stage" id="stage">
+      <div class="stage-in" id="stage-in">
+        <canvas id="globe-gl" aria-hidden="true"></canvas>
+        <canvas id="globe" role="img" data-i18n-aria="home.globeLabel"></canvas>
+        <div class="tip" id="globe-tip" hidden></div>
+
+        <div class="scene" data-s="0">
+          <p class="kicker" data-i18n="sc.kicker">NASA Space Apps · P.N.G</p>
+          <h1 data-i18n="home.title">Pick a country. Read its fire record.</h1>
+          <p class="lead" data-i18n="home.lead"></p>
+        </div>
+        <div class="scene" data-s="1">
+          <h2 data-i18n="sc1.title"></h2>
+          <p class="lead" data-i18n="sc1.text"></p>
+        </div>
+        <div class="scene" data-s="2">
+          <h2 data-i18n="sc2.title"></h2>
+          <dl class="figures" id="home-stats"></dl>
+        </div>
+        <div class="scene" data-s="3">
+          <h2 data-i18n="sc3.title"></h2>
+          <ul class="countries" id="country-list"></ul>
+          <p class="hint" data-i18n="home.hint"></p>
+        </div>
+
+        <p class="credit" data-i18n="home.credit"></p>
+        <div class="cue" id="cue" aria-hidden="true"><span data-i18n="sc.cue">Scroll</span><i></i></div>
+      </div>
+    </section>
+
+    <section class="blk" id="home-record">
+      <div class="blk-head">
+        <h2 data-i18n="home.now">Right now</h2>
+        <p data-i18n="home.nowText"></p>
+      </div>
+      <div class="blk-body">
+        <div class="last30" id="home-30"></div>
+      </div>
+    </section>
+
+    <section class="blk" id="home-how">
+      <div class="blk-head">
+        <h2 data-i18n="how.title">How fira reads the data</h2>
+      </div>
+      <div class="blk-body">
+        <ol class="steps" id="home-steps"></ol>
+      </div>
+    </section>
+
+    <section class="blk" id="home-vs">
+      <div class="blk-head">
+        <h2 data-i18n="vs.title">Two sensors, one record</h2>
+        <p data-i18n="vs.text"></p>
+      </div>
+      <div class="blk-body">
+        <div class="vs" id="home-vs-body"></div>
+      </div>
+    </section>
+  </div>
+
+  <section id="view-country" class="country" hidden>
+    <a class="back" href="#home">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>
+      <span data-i18n="nav.all">All countries</span>
+    </a>
+
+    <header class="c-head">
+      <div class="c-text">
+        <h1 id="c-name"></h1>
+        <p class="lead" id="c-lead"></p>
+        <dl class="stats" id="stats"></dl>
+      </div>
+      <figure class="c-fig" id="c-fig" hidden>
+        <img id="c-img" alt="" width="979" height="997">
+        <figcaption id="c-cap"></figcaption>
+      </figure>
+    </header>
+
+    <div class="filters" id="filters">
+      <fieldset class="field">
+        <legend data-i18n="f.sensor">Sensor</legend>
+        <div class="seg" id="seg-sensor">
+          <label><input type="radio" name="sensor" value="modis"><span data-i18n="f.modis">MODIS</span></label>
+          <label><input type="radio" name="sensor" value="viirs"><span data-i18n="f.viirs">VIIRS</span></label>
+          <label><input type="radio" name="sensor" value="both" checked><span data-i18n="f.both">Both</span></label>
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="y-from" data-i18n="f.from">From</label>
+        <select id="y-from"></select>
+      </div>
+      <div class="field">
+        <label for="y-to" data-i18n="f.to">To</label>
+        <select id="y-to"></select>
+      </div>
+      <fieldset class="field">
+        <legend data-i18n="f.src">Source filter</legend>
+        <div class="seg" id="seg-src" title="">
+          <label><input type="radio" name="src" value="std" checked><span data-i18n="f.std">Standard</span></label>
+          <label><input type="radio" name="src" value="strict"><span data-i18n="f.strict">Strict</span></label>
+        </div>
+      </fieldset>
+      <label class="chk"><input type="checkbox" id="show-excl"><span data-i18n="f.excl">Show excluded industrial sources</span></label>
+      <ul class="key" aria-label="Sensors">
+        <li><i class="k-sq"></i><span>MODIS</span><small data-i18n="f.modisHint"></small></li>
+        <li><i class="k-ci"></i><span>VIIRS</span><small data-i18n="f.viirsHint"></small></li>
+      </ul>
+      <p class="src-hint" data-i18n="f.srcHint"></p>
+    </div>
+
+    <section class="blk" id="sec-map">
+      <div class="blk-head">
+        <h2 data-i18n="m.title">Where the satellites saw fire</h2>
+        <p data-i18n="m.text"></p>
+      </div>
+      <div class="blk-body">
+        <div class="map-wrap">
+          <canvas id="map" role="img"></canvas>
+          <div class="tip" id="map-tip" hidden></div>
+          <p class="empty" id="map-empty" hidden data-i18n="m.empty"></p>
+          <div class="map-pins" id="map-pins" aria-hidden="true"></div>
+          <div class="mz" role="group" data-i18n-aria="m.zoom">
+            <button type="button" id="mz-in" data-i18n-aria="m.zin"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+            <button type="button" id="mz-out" data-i18n-aria="m.zout"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg></button>
+            <button type="button" id="mz-reset" data-i18n-aria="m.zreset" disabled><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5"/></svg></button>
+          </div>
+        </div>
+        <p class="mz-hint" data-i18n="m.zhint"></p>
+        <div class="map-ctl">
+          <button type="button" class="btn btn-ic" id="map-play"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="i-play" d="M7 4.5v15l12-7.5z" fill="currentColor"/><path class="i-pause" d="M8 5v14M16 5v14"/></svg><span id="map-play-t" data-i18n="m.play">Play years</span></button>
+          <input type="range" id="map-year" aria-label="Year">
+          <output id="map-yearv"></output>
+          <button type="button" class="btn btn-quiet" id="map-all" data-i18n="m.all">All selected years</button>
+        </div>
+        <h3 class="sub" id="g-head"></h3>
+        <ul class="gov" id="gov"></ul>
+      </div>
+    </section>
+
+    <section class="blk" id="sec-fires">
+      <div class="blk-head">
+        <h2 data-i18n="fi.title">Largest fires</h2>
+        <p data-i18n="fi.text"></p>
+      </div>
+      <div class="blk-body">
+        <label class="sel-row"><span data-i18n="fi.sort">Sort by</span>
+          <select id="f-sort"><option value="area" data-i18n="fi.area">Largest area</option><option value="dur" data-i18n="fi.dur">Longest</option><option value="power" data-i18n="fi.power">Hottest</option></select></label>
+        <div class="tbl" id="fires"></div>
+        <p class="cap" data-i18n="fi.note"></p>
+        <p class="cap" id="fires-skip"></p>
+      </div>
+    </section>
+
+    <section class="blk" id="sec-timeline">
+      <div class="blk-head">
+        <h2 data-i18n="t.title">Detections over time</h2>
+        <p data-i18n="t.text"></p>
+        <div class="field">
+          <span class="lab" data-i18n="t.metric">Measure</span>
+          <div class="seg seg-small" id="seg-metric">
+            <label><input type="radio" name="metric" value="count" checked><span data-i18n="t.count">Detections</span></label>
+            <label><input type="radio" name="metric" value="power"><span data-i18n="t.power">Fire power</span></label>
+          </div>
+        </div>
+        <div class="seg seg-small" id="seg-tl">
+          <label><input type="radio" name="tl" value="year" checked><span data-i18n="t.year">By year</span></label>
+          <label><input type="radio" name="tl" value="month"><span data-i18n="t.month">By month</span></label>
+        </div>
+        <button type="button" class="btn btn-quiet" id="tl-reset" hidden data-i18n="t.reset">Show all years</button>
+      </div>
+      <div class="blk-body">
+        <div class="chart chart-tl" id="chart-tl"></div>
+        <div class="dn" id="dn"></div>
+      </div>
+    </section>
+
+    <section class="blk" id="sec-notable">
+      <div class="blk-head">
+        <h2 data-i18n="n.title">Notable days</h2>
+        <p data-i18n="n.text"></p>
+      </div>
+      <div class="blk-body">
+        <div class="notable" id="notable"></div>
+      </div>
+    </section>
+
+    <section class="blk" id="sec-matrix">
+      <div class="blk-head">
+        <h2 data-i18n="x.title">Season by season</h2>
+        <p data-i18n="x.text"></p>
+      </div>
+      <div class="blk-body">
+        <div class="chart chart-mx" id="chart-mx"></div>
+        <div class="ramp" aria-hidden="true"><span data-i18n="k.less">Fewer</span><i class="c0"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="c5"></i><span data-i18n="k.more">More</span></div>
+      </div>
+    </section>
+
+    <section class="blk" id="sec-calendar">
+      <div class="blk-head">
+        <h2 data-i18n="k.title">Day by day</h2>
+        <p data-i18n="k.text"></p>
+        <div class="field">
+          <label for="cal-year" data-i18n="k.year">Year</label>
+          <select id="cal-year"></select>
+        </div>
+      </div>
+      <div class="blk-body">
+        <div class="chart" id="chart-cal"></div>
+        <div class="ramp" aria-hidden="true"><span data-i18n="k.less">Fewer</span><i class="c0"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="c5"></i><span data-i18n="k.more">More</span></div>
+      </div>
+    </section>
+
+    <section class="blk" id="sec-log">
+      <div class="blk-head">
+        <h2 data-i18n="l.title">Every day with a detection</h2>
+        <p data-i18n="l.text"></p>
+        <div class="field">
+          <label for="log-sort" data-i18n="l.sort">Sort</label>
+          <select id="log-sort">
+            <option value="new" data-i18n="l.new">Newest first</option>
+            <option value="old" data-i18n="l.old">Oldest first</option>
+            <option value="most" data-i18n="l.most">Most detections</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-ic" id="csv"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg><span data-i18n="l.csv">Download CSV</span></button>
+      </div>
+      <div class="blk-body">
+        <div class="log" id="log"></div>
+        <nav class="pager" id="pager"></nav>
+      </div>
+    </section>
+
+    <section class="blk" id="sec-risk">
+      <div class="blk-head">
+        <h2 data-i18n="r.title">Fire risk estimate</h2>
+        <p data-i18n="r.text"></p>
+      </div>
+      <div class="blk-body">
+        <div class="months" id="r-months" role="group"></div>
+        <div class="risk-grid">
+          <div class="sliders">
+            <div class="slider">
+              <label for="r-t"><span data-i18n="r.temp">Temperature</span><output id="r-tv"></output></label>
+              <input type="range" id="r-t" min="10" max="50" step="1">
+            </div>
+            <div class="slider">
+              <label for="r-h"><span data-i18n="r.rh">Relative humidity</span><output id="r-hv"></output></label>
+              <input type="range" id="r-h" min="5" max="100" step="1">
+              <div class="ends"><span data-i18n="r.dry">very dry</span><span data-i18n="r.humid">humid</span></div>
+            </div>
+            <button type="button" class="btn" id="r-reset" data-i18n="r.reset">Reset to typical values</button>
+          </div>
+          <div class="result" id="r-result" aria-live="polite"></div>
+        </div>
+        <div class="chart" id="chart-risk"></div>
+      </div>
+    </section>
+
+    <section class="blk" id="sec-check">
+      <div class="blk-head">
+        <h2 data-i18n="ck.title">How well the filter works</h2>
+        <p data-i18n="ck.text"></p>
+      </div>
+      <div class="blk-body" id="check"></div>
+    </section>
+
+    <section class="blk" id="sec-about">
+      <div class="blk-head">
+        <h2 data-i18n="a.title">How fira handles the data</h2>
+      </div>
+      <div class="blk-body prose" id="about"></div>
+    </section>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <p data-i18n="ft.rights"></p>
+  <p data-i18n="ft.data"></p>
+</footer>
+
+<script src="data/world.js"></script>
+<script src="data/earth.js"></script>
+<script src="data/oman.js"></script>
+<script src="data/usa.js"></script>
+<script src="data/i18n.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
