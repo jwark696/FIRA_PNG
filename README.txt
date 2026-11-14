@@ -1,17 +1,13 @@
-fira: open index.html in a browser, or in VS Code use the Live Server extension.
-Files:
-  index.html   page structure
-  style.css    colours (the tokens at the top), fonts and layout
-  script.js    globe, map, charts, filters and the risk model
-  data/i18n.js all text in English and Arabic
-  data/oman.js Oman fire detections (built from the NASA FIRMS files)
-  data/world.js country borders (Natural Earth, public domain)
-Fonts load from Google Fonts when online. Offline, the browser uses its default fonts.
+Put your images in this folder. The site reads them by name, nothing else to edit.
 
---- Cinematic version ---
-The home page is a scroll journey: the globe flies from space down to Oman while short scenes fade in.
-The globe is drawn with WebGL 2 from NASA Blue Marble images stored in data/earth.js
-(day, night lights, clouds). Borders, Oman and the fire glow are drawn on a second canvas on top.
-If a browser has no WebGL 2, a simpler flat-coloured globe is drawn instead.
-Camera path and scene timing: PATH and SCENES near the top of the globe section in script.js.
-Fonts: Jost (English), Noto Kufi Arabic and IBM Plex Sans Arabic (Arabic), loaded from Google Fonts.
+oman-overview.jpg        shown in the Oman page header (979 x 997 works well)
+2024-01-17-before.jpg    notable day 1, scene a week before
+2024-01-17-after.jpg     notable day 1, scene on the day
+2016-03-29-before.jpg    notable day 2
+2016-03-29-after.jpg     notable day 2
+2025-07-01-before.jpg    notable day 3
+2025-07-01-after.jpg     notable day 3
+
+Use the same size and same area for the before and after of one day.
+Missing images are fine: the site shows the expected file names instead.
+To change the notable days, edit the NOTABLE list at the top of script.js.
